@@ -2,7 +2,7 @@ import Crud from "./Component/Crud"
 
 const App = () => {
   return (
-      <Crud/>
+      <Crud/> 
   )
 }
 export default App

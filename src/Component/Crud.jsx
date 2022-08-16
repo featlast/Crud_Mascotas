@@ -1,19 +1,21 @@
-import React,{ useState,useEffect } from 'react'
-import Modal from './Modal'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTrash,faPen } from '@fortawesome/free-solid-svg-icons'
-
-
+import React, { useState, useEffect } from "react";
+import Modal from "./Modal";
+import AnimalItem from "./AnimalItem";
 
 const Crud = () => {
-  const url = `https://crudcrud.com/api/4063c62c9e9a4020bcad898d3642f385/unicorns`
-  const [data, setData] = useState([])
 
-  const [edad, setEdad] = useState(Number())
-  const [name, setName] = useState('')
-  const [especie, setEspecie] = useState('')
+  const url = `https://crudcrud.com/api/${process.env.REACT_APP_KEY}/unicorns/`
+
+  const [data, setData] = useState([]);
+  //console.log(data);
+  const [animal, setAnimal] = React.useState({
+    name: "",
+    age: 0,
+    colour: "",
+  })
 
 
+  /**Listar Data */
   useEffect(() => {
     fetch(url)
       .then((res) => res.json())
@@ -23,104 +25,91 @@ const Crud = () => {
       .catch((error) => {
         console.log(error);
       });
-  }, [url]);
+  }, []);
 
   /**Crear Post */
-  const peticionPost = () =>{
-    fetch('https://crudcrud.com/api/4063c62c9e9a4020bcad898d3642f385/unicorns', {
-  headers: { "Content-Type": "application/json; charset=utf-8" },
-  method: 'POST',
-  body: JSON.stringify({
-    age: '3',
-    name: 'Pily',
-    colour: 'Criollo'
-  })
-})
-.then(response => response.json())
-.then(data => console.log(data))
-  }
-
-/**Actualizar */
-fetch(
-  'https://crudcrud.com/api/4063c62c9e9a4020bcad898d3642f385/unicorns', {
-    headers: { "Content-Type": "application/json; charset=utf-8" },
-    method: 'PUT',
-    body: JSON.stringify({
-      age: '31',
-      name: 'PruebaActualizar',
-      colour: 'Criollo'
+  const handlePost = () => {
+    fetch(url, {
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      method: "POST",
+      body: JSON.stringify(animal),
     })
-  })
-  .then(response => console.log(response))
+      .then((response) => response.json())
+      .then((dataResponse) => {
+        //console.log(dataResponse)
+        setData([...data, dataResponse])
+      });
+  };
 
-  /**Eliminar */
-  fetch(
-    'https://crudcrud.com/api/4063c62c9e9a4020bcad898d3642f385/unicorns', {
-      method: 'DELETE'
-    })
-    .then(response => console.log(response))
+  /**Actualizar */
+  const handleUpdate = (id, name, age, colour) => {
+    fetch(`${url}${id}`, {
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      method: "PUT",
+      body: JSON.stringify({
+        age: age,
+        name: name,
+        colour: colour,
+      }),
+    }).then((response) => {
+      //console.log(response)
+      const newData = data.map(animal => animal._id === id ? {_id: id, name, age, colour} : animal);
+      setData(newData);
+    }).catch(e => console.log(e))
+  };
 
-/**Generar ID Aleatorio */
-  const generarId = () => {
-    const fecha = Date.now().toString(36)
-    const random = Math.random().toString().substring(2)
-    return random + fecha
+  /**Function Eliminar Data */
+  const handleDelete = (id) => {
+    fetch(`${url}${id}`, {
+      method: "DELETE",
+    }).then((response) => console.log(response));
+    const newData = data.filter(animal => animal._id !== id);
+      setData(newData);
+    alert("deleted success!")
+  };
 
-}
-  
+
+
+
   return (
-<div className='bg-orange-400 text-center relative p-12 flex-auto'>
-        <h1 className='text-white uppercase '>Crud API</h1>
-  <Modal
-  setEdad={setEdad}
-  setName={setName}
-  setEspecie={setEspecie}
-  peticionPost={peticionPost}
+    <div className=" animate-pulse px-10 py-5 rounded-xl border-double border-4 border-sky-500 text-center ">
+      <h1 className="text-white uppercase ">Crud API</h1>
+      <Modal
+        animal={animal}
+        setAnimal={setAnimal}
+        handlePost={handlePost}
+      />
 
-  />
- 
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-            
-              <tr >
-                <th scope="col" className="py-3 px-6">
-                    Nombre
-                </th>
-                <th scope="col" className="py-3 px-6">
-                    Edad
-                </th>
-                <th scope="col" className="py-3 px-6">
-                    Especie
-                </th>
-                <th scope="col" className="py-3 px-6">
-                    Acciones
-                </th>
-            </tr>
-            
-            
+          <tr>
+            <th scope="col" className="py-3 px-6">
+              Nombre
+            </th>
+            <th scope="col" className="py-3 px-6">
+              Edad (Años)
+            </th>
+            <th scope="col" className="py-3 px-6">
+              Especie
+            </th>
+            <th scope="col" className="py-3 px-6">
+              Acciones
+            </th>
+          </tr>
         </thead>
         <tbody>
-        {data.map(dt => (
-            <tr key={generarId()} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                <th scope="row" className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    {dt.name}
-                </th>
-                <td className="py-4 px-6">
-                    {dt.age}
-                </td>
-                <td className="py-4 px-6">
-                    {dt.colour}
-                </td>
-                <td className="py-4 px-6 space-x-4">
-                    {<FontAwesomeIcon icon={faTrash} />}
-                      { <FontAwesomeIcon icon={faPen}/>}
-                </td>
-            </tr>
-            ))}
+          {data.map((dt) => (
+            <AnimalItem 
+              key={dt._id} 
+              {...dt} 
+              handleDelete={handleDelete} 
+              handleUpdate={handleUpdate} 
+            />
+          ))}
         </tbody>
-    </table>
-      </div>
-  )
-}
+      </table>
+    </div>
+  );
+};
 
-export default Crud
+export default Crud;
